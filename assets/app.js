@@ -45,7 +45,7 @@
 
     $('titre').textContent = soc ? NOMS[soc] : 'SACRI et filiales';
     var ph = '<b>' + nR + ' article' + (nR > 1 ? 's' : '') + ' en rupture</b> et ' + nS + ' sous le seuil, sur ' + st.length + ' suivis. ';
-    ph += transit.length ? transit.length + ' envoi' + (transit.length > 1 ? 's' : '') + ' en route ou en douane pour ' + mf(transit.reduce(function (a, i) { return a + i.val; }, 0)) + ' M FCFA.' : 'Aucun envoi en route.';
+    ph += transit.length ? transit.length + ' envoi' + (transit.length > 1 ? 's' : '') + ' en route ou en douane pour ' + mf(transit.reduce(function (a, i) { return a + i.val; }, 0)) + '\u00a0M\u00a0FCFA.' : 'Aucun envoi en route.';
     $('phrase').innerHTML = ph;
 
     var k = [
@@ -71,7 +71,7 @@
       data: { labels: SOCS.map(function (s) { return s === 'Trans-Roulements' ? ['Trans-', 'Roulements'] : s; }), datasets: [{ data: v, backgroundColor: col, borderRadius: 6, maxBarThickness: 46 }] },
       options: {
         maintainAspectRatio: false, animation: false,
-        plugins: { legend: { display: false }, tooltip: { callbacks: { label: function (c) { return nf(c.raw, 1) + ' M FCFA'; } } } },
+        plugins: { legend: { display: false }, tooltip: { callbacks: { label: function (c) { return nf(c.raw, 1) + '\u00a0M\u00a0FCFA'; } } } },
         scales: {
           x: { grid: { display: false }, ticks: { color: '#55534F', font: { size: 12 }, maxRotation: 0, autoSkip: false } },
           y: { beginAtZero: true, grid: { color: G3 }, border: { display: false }, ticks: { color: G, callback: function (x) { return nf(x); } } }
@@ -147,7 +147,7 @@
       return '<div class="env"><div class="id"><span class="md">' + ICON[md] + '</span>' + esc(i.four) +
         '<small>' + (i.mode === 'Aérien' ? 'Avion, aéroport' : 'Bateau, port') + ' d\'Abidjan · ' + esc(i.tr) + '<br>' + esc(i.socs.join(', ')) + '</small></div>' +
         '<div class="steps">' + h + '</div>' +
-        '<div class="al"><span class="pill ' + pc + '">' + esc(a) + '</span><span class="val">' + mf(i.val) + ' M FCFA · documents ' + esc(i.docs.replace(' / ', '\u00a0sur\u00a0')) + '</span></div></div>';
+        '<div class="al"><span class="pill ' + pc + '">' + esc(a) + '</span><span class="val">' + mf(i.val) + '\u00a0M\u00a0FCFA · documents ' + esc(i.docs.replace(' / ', '\u00a0sur\u00a0')) + '</span></div></div>';
     }).join('') || '<p class="empty">Aucun envoi pour cette société.</p>';
   }
 
@@ -160,7 +160,7 @@
       data: { labels: ['Proforma attendue', 'Proforma à payer', 'Payée', 'Expédiée'], datasets: [{ data: v, backgroundColor: [G2, O2, O2, O], borderRadius: 5, maxBarThickness: 26 }] },
       options: {
         indexAxis: 'y', maintainAspectRatio: false, animation: false, layout: { padding: { right: 44 } },
-        plugins: { legend: { display: false }, tooltip: { callbacks: { label: function (c) { return nf(c.raw, 1) + ' M FCFA'; } } } },
+        plugins: { legend: { display: false }, tooltip: { callbacks: { label: function (c) { return nf(c.raw, 1) + '\u00a0M\u00a0FCFA'; } } } },
         scales: {
           x: { beginAtZero: true, grid: { color: G3 }, border: { display: false }, ticks: { color: G, callback: function (x) { return nf(x); } } },
           y: { grid: { display: false }, ticks: { color: '#55534F', font: { size: 12 } } }
