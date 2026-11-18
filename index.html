@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>SACRI · Stocks et importations</title>
+<link rel="icon" href="data:,">
+<link rel="preload" href="assets/Inter.ttf?v=20261118b" as="font" type="font/ttf" crossorigin>
+<link rel="stylesheet" href="assets/style.css?v=20261118b">
+</head>
+<body>
+<div class="demo"><div class="wrap">Données de démonstration</div></div>
+
+<header class="masthead">
+  <div class="wrap mh">
+    <img src="assets/logo-sacri.png?v=20261118b" alt="SACRI" class="logo" width="160" height="82">
+    <div class="mh-txt">
+      <p class="eyebrow">Stocks et importations</p>
+      <p class="arrete">Situation au <span id="arrete"></span></p>
+    </div>
+  </div>
+</header>
+
+<nav class="filters">
+  <div class="wrap fl">
+    <span class="fl-l">Société</span>
+    <div class="socs" id="socs" role="tablist" aria-label="Société"></div>
+  </div>
+</nav>
+
+<main class="wrap">
+  <section class="intro">
+    <h1 id="titre">SACRI et filiales</h1>
+    <p id="phrase" class="lede"></p>
+  </section>
+
+  <section class="kpis" id="kpis"></section>
+
+  <section class="block">
+    <div class="bh"><span class="num">01</span><h2>Stock</h2></div>
+    <div class="grid2">
+      <div class="card">
+        <p class="cap">Valeur du stock par société <span class="note">M FCFA</span></p>
+        <div class="ch"><canvas id="c-soc"></canvas></div>
+      </div>
+      <div class="card">
+        <p class="cap">État des articles <span class="note" id="n-art"></span></p>
+        <div class="ch ch-d"><canvas id="c-etat"></canvas></div>
+        <div class="leg-d" id="leg-etat"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="bh"><span class="num">02</span><h2>Ruptures</h2><span class="bh-n" id="n-rupt"></span></div>
+    <div class="rupts" id="rupts"></div>
+  </section>
+
+  <section class="block">
+    <div class="bh"><span class="num">03</span><h2>Importations</h2><span class="bh-n" id="n-imp"></span></div>
+    <div class="card frise-card">
+      <div class="frise-h">
+        <span class="leg"><i class="dot done"></i>Fait <i class="dot now"></i>En cours <i class="dot todo"></i>À venir</span>
+        <span class="note">Dates prévues en gris</span>
+      </div>
+      <div id="frise"></div>
+    </div>
+    <div class="grid2 g-cmd">
+      <div class="card">
+        <p class="cap">Commandes en cours par étape <span class="note">M FCFA</span></p>
+        <div class="ch ch-s"><canvas id="c-cmd"></canvas></div>
+      </div>
+      <div class="card">
+        <p class="cap">À traiter</p>
+        <ul class="todo" id="todo"></ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="bh"><span class="num">04</span><h2>Articles</h2><span class="bh-n" id="n-tbl"></span></div>
+    <div class="card">
+      <div class="tfl">
+        <input type="search" id="q" placeholder="Chercher un article, une marque…" aria-label="Chercher">
+        <div class="chips" id="etats"></div>
+      </div>
+      <div class="tbl-wrap"><table class="tbl" id="tbl"></table></div>
+    </div>
+  </section>
+</main>
+
+<footer class="foot">
+  <div class="wrap">
+    <p>Stock compté, seuils et couvertures calculés à la date de situation. Seuil d'alerte = consommation pendant le délai d'approvisionnement plus 15 jours de sécurité. Dates de dédouanement indicatives, à confirmer avec le transitaire.</p>
+  </div>
+</footer>
+
+<script src="assets/chart.umd.min.js?v=20261118b"></script>
+<script src="assets/app.js?v=20261118b"></script>
+</body>
+</html>
