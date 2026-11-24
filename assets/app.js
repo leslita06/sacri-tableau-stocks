@@ -99,25 +99,48 @@ function renderHeat(){
     h+='<tr class="'+(dim?"dim":"")+'"><td class="rh'+(SF===r.s?" on":"")+'" data-soc="'+esc(r.s)+'"><span class="sn">'+tile(r.s)+'<span><span class="nm db">'+esc(r.s)+'</span><span class="mt db">'+esc(D.par[r.s][0])+"</span></span></span></td>";
     FAM.forEach(function(f){
       var a=r.st.filter(function(x){return famOf(x.fam).k===f.k;});
-      if(!a.length){h+='<td class="na" title="'+esc(r.s)+' ne vend pas cette famille"><span class="cl">—</span></td>';return;}
+      if(!a.length){h+='<td class="na" title="'+esc(r.s)+' ne vend pas cette famille" aria-label="Non vendu"></td>';return;}
       var w=Math.min.apply(null,a.map(function(x){return ETK[etat(x)].i;})),e=ET[w],nw=a.filter(function(x){return ETK[etat(x)].i===w;}).length;
       var det=ET.map(function(z){var c=a.filter(function(x){return etat(x)===z.k;}).length;return c?c+" "+z.pl:"";}).filter(Boolean).join(", ");
       var LB={"Rupture":["rupture","ruptures"],"Sous le seuil":["sous seuil","sous seuil"],"À surveiller":["à surveiller","à surveiller"],"Surstock":["surstock","surstocks"]};var lab=e.k==="OK"?(a.length>1?"tous OK":"OK"):LB[e.k][nw>1?1:0];
       h+='<td class="c '+e.c+'" data-soc="'+esc(r.s)+'" data-fam="'+f.k+'" title="'+esc(r.s+" · "+f.l+" : "+a.length+" article"+(a.length>1?"s":"")+" ("+det+")")+'"><span class="cv">'+(e.k==="OK"?a.length:nw)+'</span><span class="cl">'+lab+'</span><span class="sq">'+a.slice().sort(function(p,q){return ETK[etat(p)].i-ETK[etat(q)].i;}).map(function(x){return '<i class="'+ETK[etat(x)].c+'"></i>';}).join("")+"</span></td>";
     });
     var v=sum(r.st.map(function(x){return x.val;})),nr=cnt(r.st,"Rupture"),ac=sum(r.st.map(function(x){return D.prop[x.ref]?D.prop[x.ref].m:0;}));
-    h+='<td class="num xn"><b>'+M(v)+' M</b><small>'+pl(r.st.length,"article")+'</small></td><td class="num xn"><b>'+(ac?M(ac)+" M":"—")+"</b><small>"+(ac?pl(r.st.filter(function(x){return D.prop[x.ref];}).length,"article"):"rien à lancer")+"</small></td></tr>";
+    h+='<td class="num xn"><b>'+M(v)+' M</b><small>'+pl(r.st.length,"article")+'</small></td><td class="num xn"><b>'+(ac?M(ac)+" M":"0 M")+"</b><small>"+(ac?pl(r.st.filter(function(x){return D.prop[x.ref];}).length,"article"):"rien à lancer")+"</small></td></tr>";
   });
   var all=D.stock;
   h+='</tbody><tfoot><tr><td class="rh">Groupe<small class="gs">articles en alerte</small></td>'+FAM.map(function(f){var a=all.filter(function(x){return famOf(x.fam).k===f.k;}),r=a.filter(function(x){var k=etat(x);return k==="Rupture"||k==="Sous le seuil";}).length;
     return '<td class="num" style="text-align:center"><b>'+r+'</b><small>sur '+a.length+"</small></td>";}).join("")+
     '<td class="num xn"><b>'+M(sum(all.map(function(x){return x.val;})))+' M</b></td><td class="num xn"><b>'+M(sum(Object.keys(D.prop).map(function(k){return D.prop[k].m;})))+" M</b></td></tr></tfoot>";
   $("hm").innerHTML=h;
+  renderHeatList(rows);
   var SW={"s-r":"#C8352B","s-s":"#F6C9B0","s-a":"#FCEFD6","s-x":"#E4ECF5","s-o":"#E6F2EA"};
   var FL='<div class="famleg">'+FAM.map(function(f){return "<span>"+ic(f.ico)+f.l+"</span>";}).join("")+"</div>";
-  $("hm-leg").innerHTML=FL+ET.map(function(e){return '<span><i style="background:'+SW[e.c]+'"></i>'+e.l+"</span>";}).join("")+'<span><i style="background:repeating-linear-gradient(135deg,#F7F7F5 0 3px,#E4E4E0 3px 4px)"></i>Non vendu</span><span class="sep"></span><span>Couleur de la case : l\'état le plus grave. Petits carrés : un par article.</span>';
+  $("hm-leg").innerHTML=FL+ET.map(function(e){return '<span><i style="background:'+SW[e.c]+'"></i>'+e.l+"</span>";}).join("")+'<span class="nv"><i style="background:#EDEDEA"></i>Non vendu</span><span class="sep"></span><span>Couleur de la case : l\'état le plus grave. Petits carrés : un par article.</span>';
   [].forEach.call($("hm").querySelectorAll("td.c"),function(td){td.onclick=function(){SF=td.dataset.soc;FF=td.dataset.fam;EF=null;Q="";$("q").value="";renderSide();badges();show("stock");};});
   [].forEach.call($("hm").querySelectorAll("tbody td.rh"),function(td){td.onclick=function(){pick(SF===td.dataset.soc?null:td.dataset.soc);};});
+}
+
+/* téléphone : une fiche repliable par société au lieu de la grille */
+function renderHeatList(rows){
+  var LB1={"Rupture":["rupture","ruptures"],"Sous le seuil":["sous le seuil","sous le seuil"],"À surveiller":["à surveiller","à surveiller"],"Surstock":["en surstock","en surstock"],"OK":["OK","OK"]};
+  var h=rows.map(function(r){
+    var fams=FAM.map(function(f){return {f:f,a:r.st.filter(function(x){return famOf(x.fam).k===f.k;})};});
+    var sold=fams.filter(function(o){return o.a.length;}),none=fams.filter(function(o){return !o.a.length;});
+    var alr=[];["Rupture","Sous le seuil"].forEach(function(k){sold.forEach(function(o){var c=o.a.filter(function(x){return etat(x)===k;}).length;if(c)alr.push(c+"\u00a0"+LB1[k][c>1?1:0]+" "+o.f.l.toLowerCase());});});
+    var nr=cnt(r.st,"Rupture"),ns=cnt(r.st,"Sous le seuil"),v=sum(r.st.map(function(x){return x.val;})),ac=sum(r.st.map(function(x){return D.prop[x.ref]?D.prop[x.ref].m:0;}));
+    var badge=nr?'<span class="pill r">'+pl(nr,"rupture")+"</span>":(ns?'<span class="pill o">'+ns+" sous le seuil</span>":'<span class="pill g">Tout va bien</span>');
+    var sm='<summary><span class="hl-t">'+tile(r.s)+'<span style="min-width:0"><span class="nm db">'+esc(r.s)+'</span><span class="hl-s db">'+(alr.length?esc(alr.join(" · ")):"Aucune alerte")+'</span></span></span><span class="hl-r">'+badge+ic("chevron-down")+"</span></summary>";
+    var body=sold.map(function(o){
+      var w=Math.min.apply(null,o.a.map(function(x){return ETK[etat(x)].i;})),e=ET[w];
+      var det=ET.map(function(z){var c=o.a.filter(function(x){return etat(x)===z.k;}).length;return c?c+"\u00a0"+LB1[z.k][c>1?1:0]:"";}).filter(Boolean).join(", ");
+      return '<button class="hl-f" data-soc="'+esc(r.s)+'" data-fam="'+o.f.k+'"><span class="hl-c '+e.c+'">'+ic(o.f.ico)+'</span><span style="min-width:0"><span class="hl-n db">'+o.f.l+'</span><span class="hl-d db">'+det+'</span></span><span class="sq hl-q">'+o.a.slice().sort(function(p,q){return ETK[etat(p)].i-ETK[etat(q)].i;}).map(function(x){return '<i class="'+ETK[etat(x)].c+'"></i>';}).join("")+"</span>"+ic("chevron-right")+"</button>";}).join("");
+    if(none.length)body+='<p class="hl-no">Non vendu : '+none.map(function(o){return o.f.l.toLowerCase();}).join(", ")+"</p>";
+    body+='<div class="hl-tot"><span>Stock<b>'+M(v)+"\u00a0M\u00a0FCFA</b></span><span>Achats à lancer<b>"+M(ac)+"\u00a0M\u00a0FCFA</b></span></div>";
+    return '<details class="hl'+(SF&&SF!==r.s?" dim":"")+'"'+(SF===r.s?" open":"")+">"+sm+'<div class="hl-b">'+body+"</div></details>";
+  }).join("");
+  $("hm-list").innerHTML=h;
+  [].forEach.call($("hm-list").querySelectorAll(".hl-f"),function(b){b.onclick=function(){SF=b.dataset.soc;FF=b.dataset.fam;EF=null;Q="";$("q").value="";renderSide();badges();show("stock");};});
 }
 
 function renderLede(){
@@ -167,7 +190,7 @@ function steps(i){
     {n:"Commandé",d:dc(cde),ok:true},
     {n:air?"Envolé":"Embarqué",d:i.dep?dc(i.dep):"prévu "+dc(i.depp),ok:!!i.dep,late:!i.dep&&i.depp<T},
     {n:air?"Aéroport":"Port",d:arrived?dc(i.arr):"prévu "+dc(i.arr),ok:arrived,late:!arrived&&i.retard>3},
-    {n:"Dédouané",d:livre?"fait":(arrived?(i.alerte==="Documents manquants"?"docs "+i.docs.replace(" / ","/"):"en cours"):"—"),ok:livre,late:arrived&&i.alerte==="Documents manquants"},
+    {n:"Dédouané",d:livre?"fait":(arrived?(i.alerte==="Documents manquants"?"docs "+i.docs.replace(" / ","/"):"en cours"):"à venir"),ok:livre,late:arrived&&i.alerte==="Documents manquants"},
     {n:"Livré",d:livre?dc(i.livre):"prévu "+dc(i.depot),ok:livre,late:!livre&&i.depot<T}
   ];
   var last=0;s.forEach(function(x,k){if(x.ok)last=k;});
@@ -214,7 +237,7 @@ function renderStock(){
   h+=r.map(function(x){var e=ETK[etat(x)],cap=x.delai+90,w=Math.min(x.couv/cap,1)*100,mk=x.delai/cap*100;
     return '<tr><td><div class="art"><p class="nm">'+esc(x.des)+'</p><p class="mt">'+esc(x.ref)+" · "+esc(x.marque)+" · "+esc(x.fam)+" · "+F(x.conso)+" "+esc(x.unite)+(x.conso>1?"s":"")+' par mois</p></div></td>'+
       '<td class="l" data-l="Société">'+stag(x.soc)+'</td>'+
-      '<td class="num'+(x.stock===0?" bad":"")+'" data-l="Stock">'+F(x.stock)+'</td><td class="num" data-l="Seuil">'+F(x.seuil)+'</td><td class="num" data-l="En commande">'+(x.encde?F(x.encde):'<span class="zero">—</span>')+"</td>"+
+      '<td class="num'+(x.stock===0?" bad":"")+'" data-l="Stock">'+F(x.stock)+'</td><td class="num" data-l="Seuil">'+F(x.seuil)+'</td><td class="num" data-l="En commande">'+(x.encde?F(x.encde):'<span class="zero">0</span>')+"</td>"+
       '<td class="num" data-l="Couverture"><span class="cov"><span class="tr"><i style="width:'+w+"%;background:"+e.col+'"></i><b style="left:'+mk+'%"></b></span>'+x.couv+"\u00a0j</span></td>"+
       '<td class="num hm-f" data-l="Valeur">'+(x.val?M(x.val,2)+"\u00a0M":'<span class="zero">0</span>')+'</td><td class="l" data-l="État"><span class="pill '+e.p+'">'+e.l+"</span></td></tr>";}).join("")||'<tr><td colspan="8"><p class="empty">Aucun article pour ces filtres.</p></td></tr>';
   $("st-tbl").innerHTML=h+"</tbody>";
