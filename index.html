@@ -4,18 +4,17 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow">
-<meta name="theme-color" content="#F7F7F5">
+<meta name="theme-color" content="#F8FAFC">
 <title>SACRI · Stocks et achats du groupe</title>
 <link rel="icon" href="data:,">
 <link rel="preload" href="assets/Inter.ttf" as="font" type="font/ttf" crossorigin>
-<link rel="stylesheet" href="assets/base.css?v=20261124t">
-<link rel="stylesheet" href="assets/stocks.css?v=20261124t">
+<link rel="stylesheet" href="assets/app.css?v=2027b">
 </head>
 <body>
 <div class="app">
 
 <aside class="side" aria-label="Navigation">
-  <div class="brand"><img src="assets/logo-sacri.png" alt="SACRI"><div class="bt"><p class="bn">Groupe SACRI</p><p class="bs">Stocks et achats</p></div></div>
+  <div class="brand"><img src="assets/logo-sacri.png" alt="SACRI"><div class="bt"><p class="bn">Stocks et achats</p><p class="bs">Groupe, 5 sociétés</p></div></div>
   <nav class="nav">
     <p class="nl">Pilotage</p>
     <button class="ni" data-v="ensemble"><i data-i="layout-dashboard"></i>Vue d'ensemble</button>
@@ -23,6 +22,9 @@
     <button class="ni" data-v="achats"><i data-i="shopping-cart"></i>Achats à lancer<span class="k" id="k-ac"></span></button>
     <button class="ni" data-v="commandes"><i data-i="clipboard-list"></i>Commandes<span class="k" id="k-cm"></span></button>
     <button class="ni" data-v="imports"><i data-i="ship"></i>Importations<span class="k red" id="k-im"></span></button>
+    <p class="nl">Magasin et achats</p>
+    <button class="ni" data-v="receptions"><i data-i="package-check"></i>Réceptions<span class="k" id="k-rc"></span></button>
+    <button class="ni" data-v="suivi"><i data-i="receipt"></i>Achats<span class="k red" id="k-su"></span></button>
     <p class="nl">Sociétés</p>
     <div id="side-socs"></div>
   </nav>
@@ -33,80 +35,172 @@
 </aside>
 
 <div class="main">
-  <header class="bar">
+  <header class="bar" id="bar">
     <div class="bar-in">
       <img src="assets/logo-sacri.png" alt="SACRI" class="brand-m">
       <div class="crumb"><span class="grp">Groupe SACRI</span><i data-i="chevron-right" class="sep"></i><b id="crumb-v">Vue d'ensemble</b></div>
       <div class="bar-r">
-        <span class="asof">Situation au <b id="date"></b></span>
+        <span class="asof"><i data-i="calendar"></i>Situation au <b id="date"></b></span>
         <span class="pill-demo top"><i data-i="info"></i><span class="lbl-l">Données de démonstration</span><span class="lbl-s">Démo</span></span>
-        <div class="sel">
-          <button class="sel-b" id="sel-b" aria-haspopup="true"><span id="sel-dot"></span><span id="sel-l">Toutes les sociétés</span><i data-i="chevron-down"></i></button>
-          <div class="menu" id="menu"></div>
-        </div>
       </div>
+    </div>
+    <div class="fbar" id="fbar">
+      <span class="fl"><i data-i="sliders-horizontal"></i>Filtres</span>
+      <div class="sel">
+        <button class="sel-b" id="sel-b" aria-haspopup="true"><span id="sel-dot"><i data-i="building-2"></i></span><span id="sel-l">Toutes les sociétés</span><i data-i="chevron-down"></i></button>
+        <div class="menu" id="menu"></div>
+      </div>
+      <div class="seg per" id="per" role="group" aria-label="Période">
+        <button data-p="7">7 j</button><button data-p="30">30 j</button><button data-p="90">Trimestre</button><button data-p="365">Année</button>
+      </div>
+      <div class="met" id="fmet"></div>
+      <button class="freset" id="freset" hidden><i data-i="rotate-ccw"></i>Tout effacer</button>
     </div>
   </header>
 
   <main class="content">
 
   <section class="view" id="v-ensemble">
-    <div class="vh"><div><h1 id="h-ens">Stocks et achats du groupe</h1><p class="lede" id="lede"></p></div></div>
+    <div class="vh"><h1 id="h-ens">Stocks et achats du groupe</h1><p class="lede" id="lede"></p></div>
+    <div class="kstrip k5" id="kpis"></div>
 
-    <div class="card hm-card">
-      <div class="card-h"><p class="t">Les cinq sociétés, famille par famille</p><p class="u hm-u">Cliquez une case pour voir les articles</p></div>
+    <div class="gr g21 mt">
+      <div class="card"><div class="card-h"><div><p class="t"><i data-i="chart-column"></i><span id="t-es">Entrées et sorties</span></p><p class="u" id="u-es"></p></div><div class="x" id="x-es"></div></div><div class="card-b"><div class="ch l"><canvas id="c-es"></canvas></div></div></div>
+      <div class="card"><div class="card-h"><div><p class="t"><i data-i="gauge"></i>Couverture du stock</p><p class="u" id="u-gc"></p></div></div><div class="card-b"><div class="gauge"><canvas id="c-gc"></canvas><div class="gc"><p class="gv" id="gc-v"></p><p class="gs" id="gc-s"></p></div></div></div><div class="leg" id="gc-leg"></div></div>
+    </div>
+
+    <div class="gr g3 mt">
+      <div class="card"><div class="card-h"><div><p class="t"><i data-i="chart-pie"></i>Stock par famille</p><p class="u">Valeur au coût d'achat, en M FCFA</p></div></div><div class="card-b"><div class="donut"><canvas id="c-fam"></canvas><div class="gc"><p class="gv" id="fam-v"></p><p class="gs">M FCFA</p></div></div></div><div class="dleg" id="fam-leg"></div></div>
+      <div class="card"><div class="card-h"><div><p class="t"><i data-i="chart-bar-stacked"></i>Ruptures par société</p><p class="u" id="u-rup"></p></div></div><div class="card-b"><div class="ch"><canvas id="c-rup"></canvas></div></div><div class="leg"><span><i style="background:#EF4444"></i>Encore en rupture</span><span><i style="background:#CBD5E1"></i>Rupture résolue</span></div></div>
+      <div class="card"><div class="card-h"><div><p class="t"><i data-i="activity"></i>Valeur du stock</p><p class="u" id="u-val"></p></div><div class="x" id="x-val"></div></div><div class="card-b"><div class="ch"><canvas id="c-val"></canvas></div></div></div>
+    </div>
+
+    <div class="card hm-card mt">
+      <div class="card-h"><div><p class="t"><i data-i="layers"></i>Les cinq sociétés, famille par famille</p><p class="u">Situation au jour. Cliquez une case pour voir les articles.</p></div></div>
       <div class="hm-wrap"><table class="heat" id="hm"></table></div>
       <div class="hm-list" id="hm-list"></div>
       <div class="hm-leg" id="hm-leg"></div>
     </div>
 
-    <div class="kstrip k5 mt24" id="kpis"></div>
+    <div class="card mt">
+      <div class="card-h"><div><p class="t"><i data-i="ship"></i>Frise des arrivages</p><p class="u" id="u-fr"></p></div><button class="lnk" data-goto="imports">Toutes les importations<i data-i="arrow-right"></i></button></div>
+      <div class="card-b"><div class="ch" id="fr-box"><canvas id="c-fr"></canvas></div></div>
+      <div class="leg"><span><i style="background:#10B981"></i>Livré</span><span><i style="background:#0EA5E9"></i>En route</span><span><i style="background:#F59E0B"></i>En douane</span><span><i style="background:#EF4444"></i>En alerte</span><span><i style="background:#0F172A;width:2px"></i>Aujourd'hui</span></div>
+    </div>
 
-    <div class="g2 mt24">
+    <div class="card mt">
+      <div class="card-h"><div><p class="t"><i data-i="flame"></i>Les articles qui tournent le plus</p><p class="u" id="u-rot"></p></div></div>
+      <div class="rot" id="rot"></div>
+      <div class="rleg" id="rot-leg"></div>
+    </div>
+
+    <div class="gr g2 mt">
       <div>
-        <div class="sh first"><h2>À traiter cette semaine</h2></div>
+        <div class="sh first"><h2><i data-i="list"></i>À traiter cette semaine</h2></div>
         <div class="list" id="todo"></div>
       </div>
       <div>
-        <div class="sh first"><h2>Achats à lancer</h2><button class="lnk" data-goto="achats">Voir les suggestions<i data-i="arrow-right"></i></button></div>
+        <div class="sh first"><h2><i data-i="shopping-cart"></i>Achats à lancer</h2><button class="lnk" data-goto="achats">Voir les suggestions<i data-i="arrow-right"></i></button></div>
         <div class="list" id="ac-mini"></div>
       </div>
     </div>
 
-    <div class="sh"><h2>Importations en cours</h2><button class="lnk" data-goto="imports">Toutes les importations<i data-i="arrow-right"></i></button></div>
+    <div class="sh"><h2><i data-i="container"></i>Importations en cours</h2><button class="lnk" data-goto="imports">Toutes les importations<i data-i="arrow-right"></i></button></div>
     <div class="list" id="im-mini"></div>
   </section>
 
   <section class="view" id="v-stock">
-    <div class="vh"><div><h1>Stock</h1><p class="lede" id="st-lede"></p></div></div>
-    <div class="toolbar">
-      <div class="seg" id="st-seg"></div>
-      <label class="srch"><i data-i="search"></i><input type="search" id="q" placeholder="Article, marque, référence…" aria-label="Chercher un article"></label>
+    <div class="vh"><h1>Stock</h1><p class="lede" id="st-lede"></p></div>
+    <div class="kstrip k4" id="st-kpis"></div>
+    <div class="gr g3 mt">
+      <div class="card"><div class="card-h"><div><p class="t"><i data-i="chart-pie"></i>Articles par état</p><p class="u">Situation au jour</p></div></div><div class="card-b"><div class="donut"><canvas id="c-st-et"></canvas><div class="gc"><p class="gv" id="st-et-v"></p><p class="gs">articles</p></div></div></div><div class="dleg" id="st-et-leg"></div></div>
+      <div class="card"><div class="card-h"><div><p class="t"><i data-i="chart-bar-stacked"></i>État par famille</p><p class="u">Nombre d'articles</p></div></div><div class="card-b"><div class="ch"><canvas id="c-st-fam"></canvas></div></div></div>
+      <div class="card"><div class="card-h"><div><p class="t"><i data-i="activity"></i>Articles en alerte</p><p class="u" id="u-st-ev"></p></div></div><div class="card-b"><div class="ch"><canvas id="c-st-ev"></canvas></div></div><div class="leg"><span><i style="background:#EF4444"></i>En rupture</span><span><i style="background:#E95B0F"></i>Sous le seuil</span></div></div>
     </div>
-    <div class="fchip" id="fchip"></div>
-    <div class="card tblc"><table class="tbl st" id="st-tbl"></table></div>
-    <p class="fnote">Seuil d'alerte : consommation pendant le délai d'approvisionnement, plus 15 jours de sécurité. Surstock : plus de stock que la couverture visée après commande (délai + 90 jours).</p>
+    <div class="card tblc mt">
+      <div class="tcap"><div class="seg" id="st-seg"></div><label class="srch"><i data-i="search"></i><input type="search" id="q" placeholder="Article, marque, référence…" aria-label="Chercher un article"></label></div>
+      <table class="tbl st" id="st-tbl"></table>
+    </div>
+    <p class="fnote">Seuil d'alerte : consommation pendant le délai d'approvisionnement, plus 15 jours de sécurité. Surstock : plus de stock que la couverture visée après commande (délai + 90 jours). Barre de couverture : le trait noir marque le délai d'approvisionnement.</p>
   </section>
 
   <section class="view" id="v-achats">
-    <div class="vh"><div><h1>Achats à lancer</h1><p class="lede" id="ac-lede"></p></div></div>
-    <div class="acg" id="ac"></div>
+    <div class="vh"><h1>Achats à lancer</h1><p class="lede" id="ac-lede"></p></div>
+    <div class="kstrip k4" id="ac-kpis"></div>
+    <div class="gr g3 mt">
+      <div class="card"><div class="card-h"><div><p class="t"><i data-i="chart-bar-stacked"></i>Montant par fournisseur</p><p class="u">En M FCFA, par société</p></div></div><div class="card-b"><div class="ch"><canvas id="c-ac-f"></canvas></div></div><div class="leg" id="ac-f-leg"></div></div>
+      <div class="card"><div class="card-h"><div><p class="t"><i data-i="activity"></i>Sorties des articles à commander</p><p class="u" id="u-ac-s"></p></div></div><div class="card-b"><div class="ch"><canvas id="c-ac-s"></canvas></div></div></div>
+      <div class="card"><div class="card-h"><div><p class="t"><i data-i="gauge"></i>Demandes préparées</p><p class="u">Prêtes pour validation</p></div></div><div class="card-b"><div class="gauge"><canvas id="c-ac-g"></canvas><div class="gc"><p class="gv" id="ac-g-v"></p><p class="gs" id="ac-g-s"></p></div></div></div></div>
+    </div>
+    <div class="acg mt" id="ac"></div>
     <p class="fnote">Quantité proposée : de quoi couvrir le délai d'approvisionnement plus 90 jours, arrondie au multiple de commande. Aucune commande ne part d'ici : chaque demande est relue et validée par le responsable des achats.</p>
   </section>
 
+  <section class="view" id="v-receptions">
+    <div class="vh"><h1 id="h-rc">Réceptions de la semaine</h1><p class="lede" id="rc-lede"></p></div>
+    <div class="kstrip k4" id="rc-kpis"></div>
+    <div class="gr g3 mt">
+      <div class="card"><div class="card-h"><div><p class="t"><i data-i="chart-bar-stacked"></i>Réceptions</p><p class="u" id="u-rc-b"></p></div></div><div class="card-b"><div class="ch"><canvas id="c-rc-b"></canvas></div></div><div class="leg"><span><i style="background:#10B981"></i>Conformes</span><span><i style="background:#E95B0F"></i>Avec écart</span></div></div>
+      <div class="card"><div class="card-h"><div><p class="t"><i data-i="chart-pie"></i>Lignes reçues par société</p><p class="u" id="u-rc-d"></p></div></div><div class="card-b"><div class="donut"><canvas id="c-rc-d"></canvas><div class="gc"><p class="gv" id="rc-d-v"></p><p class="gs">lignes</p></div></div></div><div class="dleg" id="rc-d-leg"></div></div>
+      <div class="card"><div class="card-h"><div><p class="t"><i data-i="gauge"></i>Taux de conformité</p><p class="u">Réceptions sans manque ni casse</p></div></div><div class="card-b"><div class="gauge"><canvas id="c-rc-g"></canvas><div class="gc"><p class="gv" id="rc-g-v"></p><p class="gs" id="rc-g-s"></p></div></div></div></div>
+    </div>
+    <div class="sh"><h2><i data-i="message-circle"></i>Bons de réception et messages WhatsApp</h2><span class="hint" id="rc-n"></span></div>
+    <div class="rcl" id="rc"></div>
+    <div id="rc-more"></div>
+    <p class="fnote">Chaque réception prépare son message WhatsApp : ce qui est arrivé, ce qui manque, où c'est rangé. « Ouvrir dans WhatsApp » ouvre le message prêt, vous choisissez le groupe ou le contact. Rien ne part tout seul.</p>
+  </section>
+
+  <section class="view" id="v-suivi">
+    <div class="vh"><h1>Achats</h1><p class="lede" id="su-lede"></p></div>
+    <div class="kstrip k4" id="su-kpis"></div>
+    <div class="gr g3 mt">
+      <div class="card"><div class="card-h"><div><p class="t"><i data-i="chart-pie"></i>Rapprochements</p><p class="u" id="u-su-d"></p></div></div><div class="card-b"><div class="donut"><canvas id="c-su-d"></canvas><div class="gc"><p class="gv" id="su-d-v"></p><p class="gs">réceptions</p></div></div></div><div class="dleg" id="su-d-leg"></div></div>
+      <div class="card"><div class="card-h"><div><p class="t"><i data-i="chart-bar-stacked"></i>Par fournisseur</p><p class="u">Réceptions rapprochées</p></div></div><div class="card-b"><div class="ch"><canvas id="c-su-f"></canvas></div></div></div>
+      <div class="card"><div class="card-h"><div><p class="t"><i data-i="timer"></i>Commandes dans les temps</p><p class="u">Commandes fournisseurs en cours</p></div></div><div class="card-b"><div class="gauge"><canvas id="c-su-g"></canvas><div class="gc"><p class="gv" id="su-g-v"></p><p class="gs" id="su-g-s"></p></div></div></div></div>
+    </div>
+    <div class="sh"><h2><i data-i="clipboard-list"></i>Commandes fournisseurs en cours</h2><button class="lnk" data-goto="commandes">Voir par étape<i data-i="arrow-right"></i></button></div>
+    <div class="card tblc">
+      <div class="tcap"><span class="hint" id="su-cap"></span><label class="srch"><i data-i="search"></i><input type="search" id="q-su" placeholder="Fournisseur, article, numéro…" aria-label="Chercher une commande"></label></div>
+      <table class="tbl su" id="su-tbl"></table>
+    </div>
+    <div class="sh"><h2><i data-i="git-compare-arrows"></i>Commande, réception, facture</h2><span class="hint">Les trois documents comparés ligne par ligne, en quantités.</span></div>
+    <div class="rpl" id="rp"></div>
+    <div id="rp-more"></div>
+    <div class="rp-leg" id="rp-leg"></div>
+  </section>
+
   <section class="view" id="v-commandes">
-    <div class="vh"><div><h1>Commandes fournisseurs</h1><p class="lede" id="cm-lede"></p></div></div>
-    <div class="pipe" id="pipe"></div>
+    <div class="vh"><h1>Commandes fournisseurs</h1><p class="lede" id="cm-lede"></p></div>
+    <div class="kstrip k4" id="cm-kpis"></div>
+    <div class="gr g3 mt">
+      <div class="card"><div class="card-h"><div><p class="t"><i data-i="funnel"></i>Entonnoir des commandes</p><p class="u">Nombre de commandes par étape</p></div></div><div class="card-b"><div class="ch"><canvas id="c-cm-f"></canvas></div></div></div>
+      <div class="card"><div class="card-h"><div><p class="t"><i data-i="chart-bar-stacked"></i>Étapes par société</p><p class="u">Commandes en cours</p></div></div><div class="card-b"><div class="ch"><canvas id="c-cm-s"></canvas></div></div><div class="leg" id="cm-s-leg"></div></div>
+      <div class="card"><div class="card-h"><div><p class="t"><i data-i="chart-pie"></i>Montant engagé par étape</p><p class="u">En M FCFA</p></div></div><div class="card-b"><div class="donut"><canvas id="c-cm-d"></canvas><div class="gc"><p class="gv" id="cm-d-v"></p><p class="gs">M FCFA</p></div></div></div><div class="dleg" id="cm-d-leg"></div></div>
+    </div>
+    <div class="pipe mt" id="pipe"></div>
   </section>
 
   <section class="view" id="v-imports">
-    <div class="vh"><div><h1>Importations</h1><p class="lede" id="im-lede"></p></div></div>
+    <div class="vh"><h1>Importations</h1><p class="lede" id="im-lede"></p></div>
+    <div class="kstrip k4" id="im-kpis"></div>
+    <div class="card mt">
+      <div class="card-h"><div><p class="t"><i data-i="ship"></i>Frise des arrivages</p><p class="u" id="u-im-fr"></p></div></div>
+      <div class="card-b"><div class="ch" id="im-fr-box"><canvas id="c-im-fr"></canvas></div></div>
+      <div class="leg"><span><i style="background:#10B981"></i>Livré</span><span><i style="background:#0EA5E9"></i>En route</span><span><i style="background:#F59E0B"></i>En douane</span><span><i style="background:#EF4444"></i>En alerte</span><span><i style="background:#0F172A;width:2px"></i>Aujourd'hui</span></div>
+    </div>
+    <div class="gr g3 mt">
+      <div class="card"><div class="card-h"><div><p class="t"><i data-i="chart-column"></i>Envois livrés</p><p class="u" id="u-im-h"></p></div></div><div class="card-b"><div class="ch"><canvas id="c-im-h"></canvas></div></div><div class="leg"><span><i style="background:#0EA5E9"></i>Bateau</span><span><i style="background:#8B5CF6"></i>Avion</span></div></div>
+      <div class="card"><div class="card-h"><div><p class="t"><i data-i="chart-pie"></i>Envois par statut</p><p class="u" id="u-im-d"></p></div></div><div class="card-b"><div class="donut"><canvas id="c-im-d"></canvas><div class="gc"><p class="gv" id="im-d-v"></p><p class="gs">envois</p></div></div></div><div class="dleg" id="im-d-leg"></div></div>
+      <div class="card"><div class="card-h"><div><p class="t"><i data-i="timer"></i>Ponctualité</p><p class="u">Envois livrés avec 2 jours de retard au plus</p></div></div><div class="card-b"><div class="gauge"><canvas id="c-im-g"></canvas><div class="gc"><p class="gv" id="im-g-v"></p><p class="gs" id="im-g-s"></p></div></div></div></div>
+    </div>
+    <div class="sh"><h2><i data-i="list"></i>Envoi par envoi</h2><span class="hint" id="im-n"></span></div>
     <div class="list" id="frise"></div>
+    <div id="im-more"></div>
     <p class="fnote">Dates en gris : prévues. Dédouanement indicatif (7 jours par bateau, 3 jours par avion), à confirmer avec le transitaire.</p>
   </section>
 
   <footer class="foot">
-    <p><b>Données de démonstration.</b> Seuls les noms des cinq sociétés du groupe, leurs métiers et les marques distribuées sont réels. Articles, quantités, commandes, envois et montants sont inventés pour montrer le fonctionnement du tableau. Montants en francs CFA hors taxes.</p>
+    <p><b>Données de démonstration.</b> Seuls les noms des cinq sociétés du groupe, leurs métiers et les marques distribuées sont réels. Articles, fournisseurs locaux, quantités, mouvements, commandes, réceptions, factures, envois et montants sont inventés pour montrer le fonctionnement du tableau. Montants en francs CFA hors taxes.</p>
     <p>Les commandes marquées « préparées » sont gardées sur cet appareil uniquement. Dans le tableau réel, les chiffres viendraient du logiciel de gestion du groupe.</p>
   </footer>
   </main>
@@ -116,8 +210,9 @@
 <nav class="tabbar" aria-label="Navigation">
   <button data-v="ensemble"><i data-i="layout-dashboard"></i><span>Ensemble</span></button>
   <button data-v="stock"><i data-i="package"></i><span>Stock</span><em id="m-st"></em></button>
-  <button data-v="achats"><i data-i="shopping-cart"></i><span>Achats</span><em id="m-ac" class="o"></em></button>
-  <button data-v="commandes"><i data-i="clipboard-list"></i><span>Commandes</span></button>
+  <button data-v="achats"><i data-i="shopping-cart"></i><span>À lancer</span><em id="m-ac"></em></button>
+  <button data-v="receptions"><i data-i="package-check"></i><span>Réceptions</span></button>
+  <button data-v="suivi"><i data-i="receipt"></i><span>Achats</span><em id="m-su"></em></button>
   <button data-v="imports"><i data-i="ship"></i><span>Imports</span><em id="m-im"></em></button>
 </nav>
 
@@ -127,8 +222,10 @@
   <div class="dr-b" id="dr-b"></div>
 </aside>
 <div class="toast" id="toast"></div>
+<div class="tip" id="tip"></div>
 
-<script src="assets/icons.js?v=20261124t"></script>
-<script src="assets/app.js?v=20261124t"></script>
+<script src="assets/chart.umd.min.js?v=2027b"></script>
+<script src="assets/icons.js?v=2027b"></script>
+<script src="assets/app.js?v=2027b"></script>
 </body>
 </html>
