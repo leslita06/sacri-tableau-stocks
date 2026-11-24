@@ -694,6 +694,7 @@ function init(d){
   var h=(location.hash||"").slice(1);
   renderSide();badges();
   show(VNAME[h]?h:"ensemble");
+  window.addEventListener("hashchange",function(){var x=(location.hash||"").slice(1);if(VNAME[x]&&x!==CUR)show(x);});
   window.__stocks={per:function(x){PER=x;renderAll();},pick:pick,show:show,openPrep:openPrep,closePrep:closePrep,groups:groups,waMsg:waMsg,rapp:rapp};
 }
 fetch("data/donnees.json?v=2027b").then(function(r){return r.json();}).then(init);
