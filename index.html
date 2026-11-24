@@ -8,7 +8,7 @@
 <title>SACRI · Stocks et achats du groupe</title>
 <link rel="icon" href="data:,">
 <link rel="preload" href="assets/Inter.ttf" as="font" type="font/ttf" crossorigin>
-<link rel="stylesheet" href="assets/app.css?v=2027d">
+<link rel="stylesheet" href="assets/app.css?v=2027e">
 </head>
 <body>
 <div class="app">
@@ -25,6 +25,7 @@
     <p class="nl">Magasin et achats</p>
     <button class="ni" data-v="receptions"><i data-i="package-check"></i>Réceptions<span class="k" id="k-rc"></span></button>
     <button class="ni" data-v="suivi"><i data-i="receipt"></i>Achats<span class="k red" id="k-su"></span></button>
+    <button class="ni" data-v="automatique"><i data-i="zap"></i>Automatique<span class="k" id="k-au"></span></button>
     <p class="nl">Sociétés</p>
     <div id="side-socs"></div>
   </nav>
@@ -199,6 +200,21 @@
     <p class="fnote">Dates en gris : prévues. Dédouanement indicatif (7 jours par bateau, 3 jours par avion), à confirmer avec le transitaire.</p>
   </section>
 
+  <section class="view" id="v-automatique">
+    <div class="vh"><h1>Ce qui part tout seul</h1><p class="lede" id="au-lede"></p></div>
+    <div class="aug" id="au-sw"></div>
+    <div class="card mt frc">
+      <div class="card-h"><div><p class="t"><i data-i="calendar-days"></i>Ce qui part tout seul cette semaine</p><p class="u" id="au-fr-s"></p></div></div>
+      <div class="fr5" id="au-fr"></div>
+      <div class="frcont" id="au-cont"></div>
+    </div>
+    <div class="aushow k-relance" data-k="relance"><div class="ash-l"><span class="ash-n">1</span><h2>Relance fournisseur</h2><p class="ash-s">Une commande en retard relance le fournisseur, puis relance à J+3.</p><div class="trig" id="au-t1"></div><div class="ash-sw"></div><p class="ash-v"></p></div><div class="ash-m" id="au-m1"></div></div>
+    <div class="aushow k-point" data-k="point"><div class="ash-l"><span class="ash-n">2</span><h2>Point stocks du lundi</h2><p class="ash-s">Lundi 7 h, dans la boîte de la direction et des 5 responsables.</p><div class="trig" id="au-t2"></div><div class="ash-sw"></div><p class="ash-v"></p></div><div class="ash-m" id="au-m2"></div></div>
+    <div class="aushow k-alerte" data-k="alerte"><div class="ash-l"><span class="ash-n">3</span><h2>Alerte rupture</h2><p class="ash-s">Un article passe sous son seuil : le magasin et le commercial sont prévenus.</p><div class="trig" id="au-t3"></div><div class="ash-sw"></div><p class="ash-v"></p></div><div class="ash-m" id="au-m3"></div></div>
+    <div class="aushow k-recep" data-k="recep"><div class="ash-l"><span class="ash-n">4</span><h2>Message de réception</h2><p class="ash-s">Chaque bon de réception part dans le groupe du magasin.</p><div class="trig" id="au-t4"></div><div class="ash-sw"></div><p class="ash-v"></p></div><div class="ash-m" id="au-m4"></div></div>
+    <div class="garde"><span><i data-i="shield-check"></i></span><div><p><b>SACRI garde la main.</b> Chaque automatisme se coupe d'un geste. Le premier envoi de chacun est relu et validé par une personne, ensuite il part seul.</p><p class="g2">Aucune commande, aucun paiement ne part sans validation.</p></div></div>
+  </section>
+
   <footer class="foot">
     <p><b>Données de démonstration.</b> Seuls les noms des cinq sociétés du groupe, leurs métiers et les marques distribuées sont réels. Articles, fournisseurs locaux, quantités, mouvements, commandes, réceptions, factures, envois et montants sont inventés pour montrer le fonctionnement du tableau. Montants en francs CFA hors taxes.</p>
     <p>Les commandes marquées « préparées » sont gardées sur cet appareil uniquement. Dans le tableau réel, les chiffres viendraient du logiciel de gestion du groupe.</p>
@@ -214,6 +230,7 @@
   <button data-v="receptions"><i data-i="package-check"></i><span>Réceptions</span></button>
   <button data-v="suivi"><i data-i="receipt"></i><span>Achats</span><em id="m-su"></em></button>
   <button data-v="imports"><i data-i="ship"></i><span>Imports</span><em id="m-im"></em></button>
+  <button data-v="automatique"><i data-i="zap"></i><span>Auto</span></button>
 </nav>
 
 <div class="scrim" id="scrim"></div>
@@ -224,8 +241,8 @@
 <div class="toast" id="toast"></div>
 <div class="tip" id="tip"></div>
 
-<script src="assets/chart.umd.min.js?v=2027d"></script>
-<script src="assets/icons.js?v=2027d"></script>
-<script src="assets/app.js?v=2027d"></script>
+<script src="assets/chart.umd.min.js?v=2027e"></script>
+<script src="assets/icons.js?v=2027e"></script>
+<script src="assets/app.js?v=2027e"></script>
 </body>
 </html>

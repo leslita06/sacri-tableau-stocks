@@ -38,7 +38,7 @@ var ETK={};ET.forEach(function(e,i){e.i=i;ETK[e.k]=e;});
 function etat(x){if(x.alerte!=="OK")return x.alerte;return x.couv>x.delai+90?"Surstock":"OK";}
 
 var SOCS,SF=null,CUR="ensemble",FF=null,EF=null,Q="",QS="",SORT={k:"etat",up:true},PER=30,VF={ac:"",rc:"",rp:"",cm:"",im:""},CH={},MORE={rc:8,rp:6,im:8},N,D0,HS={},RALL=[];
-var VNAME={ensemble:"Vue d'ensemble",stock:"Stock",achats:"Achats à lancer",commandes:"Commandes",imports:"Importations",receptions:"Réceptions",suivi:"Achats"};
+var VNAME={ensemble:"Vue d'ensemble",stock:"Stock",achats:"Achats à lancer",commandes:"Commandes",imports:"Importations",receptions:"Réceptions",suivi:"Achats",automatique:"Automatique"};
 function inSF(s){return !SF||s===SF;}
 function socsIn(i){return !SF||i.socs.indexOf(SF)>=0;}
 function tile(s){var p=D.par[s];return '<span class="ti">'+ic(p?p[1]:"building-2")+"</span>";}
@@ -647,6 +647,7 @@ var FMET={
 };
 function fval(k){return k==="fam"?(FF||""):VF[k];}
 function renderFbar(){
+  $("fbar").style.display=CUR==="automatique"?"none":"";if(CUR==="automatique")return;
   [].forEach.call($("per").children,function(b){b.classList.toggle("on",+b.dataset.p===PER);});
   var f=FMET[CUR],v=fval(f.k);
   $("fmet").innerHTML='<label class="fs">'+ic(f.ico)+'<select id="fsel" class="'+(v?"on":"")+'" aria-label="Filtre"><option value="">'+f.all+"</option>"+f.o().map(function(o){return '<option value="'+esc(o[0])+'"'+(o[0]===v?" selected":"")+">"+esc(o[1])+"</option>";}).join("")+"</select></label>";
@@ -674,8 +675,108 @@ $("q").oninput=function(e){Q=e.target.value;renderStock();};
 $("q-su").oninput=function(e){QS=e.target.value;renderSuivi();};
 
 function badges(){var st=stockF(),r=cnt(st,"Rupture"),g=groups().filter(function(x){return !PREP[x.id];}).length,oo=openOrders().length,al=transit().filter(function(i){return ALR.test(i.alerte);}).length;
-  $("k-st").textContent=r||"";$("k-ac").textContent=g||"";$("k-cm").textContent=oo||"";$("k-im").textContent=al||"";$("m-st").textContent=r||"";$("m-ac").textContent=g||"";$("m-im").textContent=al||"";var rc=recAll().length,su=suiviAlerts();$("k-rc").textContent=rc||"";$("k-su").textContent=su||"";$("m-su").textContent=su||"";}
-function render(v){renderFbar();if(v==="ensemble"){renderLede();renderKpis();renderEnsCharts();renderHeat();renderTodo();renderAcMini();renderImMini();}else if(v==="stock")renderStock();else if(v==="achats")renderAchats();else if(v==="commandes")renderCommandes();else if(v==="receptions")renderReceptions();else if(v==="suivi")renderSuivi();else renderImports();}
+  $("k-st").textContent=r||"";$("k-ac").textContent=g||"";$("k-cm").textContent=oo||"";$("k-im").textContent=al||"";$("m-st").textContent=r||"";$("m-ac").textContent=g||"";$("m-im").textContent=al||"";var rc=recAll().length,su=suiviAlerts();$("k-rc").textContent=rc||"";$("k-su").textContent=su||"";$("k-au").textContent=AUTO.filter(function(a){return AON[a.k];}).length+"/4";$("m-su").textContent=su||"";}
+/* ---------- automatique : ce qui part tout seul ---------- */
+var AUTO=[
+  {k:"relance",ico:"mail-warning",t:"Relances fournisseurs",c:"E-mail",ci:"mail",when:"Arrivée dépassée, puis J+3",who:"Fournisseur, copie aux achats",val:"le responsable des achats"},
+  {k:"point",ico:"inbox",t:"Point stocks du lundi",c:"E-mail",ci:"mail",when:"Chaque lundi, 7 h",who:"DG et responsables des 5 sociétés",val:"la direction générale"},
+  {k:"alerte",ico:"bell-ring",t:"Alertes rupture",c:"WhatsApp",ci:"message-circle",when:"Dès qu'un seuil est franchi",who:"Magasinier et commercial",val:"le responsable des achats"},
+  {k:"recep",ico:"package-check",t:"Messages de réception",c:"WhatsApp",ci:"message-circle",when:"À chaque bon de réception",who:"Groupe WhatsApp du magasin",val:"le chef de magasin"}
+];
+var AON={relance:true,point:true,alerte:true,recep:true};
+try{var _a=JSON.parse(localStorage.getItem("sacri-auto")||"null");if(_a)for(var _k in AON)if(typeof _a[_k]==="boolean")AON[_k]=_a[_k];}catch(e){}
+function saveAon(){try{localStorage.setItem("sacri-auto",JSON.stringify(AON));}catch(e){}}
+function AK(k){return AUTO.filter(function(a){return a.k===k;})[0];}
+var JC=["dim.","lun.","mar.","mer.","jeu.","ven.","sam."];
+function dj(s){var d=dd(s);return JC[d.getDay()]+" "+d.getDate()+"\u00a0"+MC[d.getMonth()];}
+function addBiz(s,n){var d=s;while(n>0){d=addd(d,1);var w=dd(d).getDay();if(w>0&&w<6)n--;}return d;}
+function nextMon(s){var d=addd(s,1);while(dd(d).getDay()!==1)d=addd(d,1);return d;}
+function hh(h){return h.replace(" h ",":").replace(/ h$/,":00");}
+function sw(k,big){return '<button class="sw'+(AON[k]?" on":"")+(big?" big":"")+'" role="switch" aria-checked="'+AON[k]+'" data-sw="'+k+'"><span class="sw-t"><i></i></span><span class="sw-l">'+(AON[k]?"Activé":"Désactivé")+"</span></button>";}
+function sref(r){return D.stock.filter(function(x){return x.ref===r;})[0];}
+function openLines(ref){return D.cmd.filter(function(c){return c.ref===ref&&c.etape!=="Reçu";});}
+function dl(s){var d=dd(s);return d.getDate()+"\u00a0"+MOIS[d.getMonth()];}
+function lc1(s){return s.charAt(0).toUpperCase()+s.slice(1);}
+
+/* les relances calculées depuis les commandes */
+function relances(){var L=[];orders().forEach(function(o){if(o.etape==="Reçu"||!o.arr)return;var e=o.envoi?D.imp.filter(function(i){return i.no===o.envoi;})[0]:null;
+  var risk=o.arr<=T||(e&&/non confirmé|manquants/.test(e.alerte));if(!risk)return;
+  var j1=addBiz(o.arr,1);if(j1<=T)j1=o.arr<T?addd(o.arr,1):addBiz(T,1);L.push({o:o,j1:j1,j3:addBiz(j1,3),late:o.arr<T});});
+  L.sort(function(a,b){return a.j1<b.j1?-1:1;});return L;}
+/* seuils qui seront franchis bientôt, sans arrivage avant */
+function projAlerts(d1,d2){var L=[];D.stock.forEach(function(x){var e=etat(x);if(e==="Rupture"||e==="Sous le seuil"||!x.conso)return;
+  var n=Math.ceil((x.stock-x.seuil)/(x.conso/30));if(n<0)return;var d=addd(T,n);if(d<d1||d>d2)return;
+  if(openLines(x.ref).some(function(c){return c.arr&&c.arr<=d;}))return;L.push({x:x,d:d});});return L;}
+
+function weekEvents(){var m=nextMon(T),days=[0,1,2,3,4].map(function(i){return {d:addd(m,i),ev:[]};}),fin=addd(m,4);
+  function put(d,ev){days.forEach(function(x){if(x.d===d)x.ev.push(ev);});}
+  put(m,{k:"point",h:"7 h",t:"Point stocks du lundi",s:"DG et 5 responsables"});
+  relances().forEach(function(r){var f=r.o.four;
+    if(r.j1>=m&&r.j1<=fin)put(r.j1,{k:"relance",h:"8 h",t:"Relance "+f,s:r.o.no+", si rien au dépôt"});
+    if(r.j3>=m&&r.j3<=fin)put(r.j3,{k:"relance",h:"8 h",t:"Relance J+3 "+f,s:r.o.no});});
+  D.imp.forEach(function(i){if(i.alerte==="Livré"||/non confirmé/.test(i.alerte))return;var d=i.depot;if(d>=m&&d<=fin)put(d,{k:"recep",h:"à l'arrivée",t:"Réception "+i.socs.join(", "),s:i.four.replace(" · ",", ")});});
+  projAlerts(m,fin).forEach(function(p){put(p.d,{k:"alerte",h:"dès le seuil",t:"Alerte "+p.x.des,s:p.x.soc+", seuil prévu ce jour"});});
+  return days;}
+
+function renderAuto(){
+  var on=AUTO.filter(function(a){return AON[a.k];}).length;
+  $("au-lede").innerHTML="<b>"+on+" automatisme"+(on>1?"s":"")+" sur 4 activé"+(on>1?"s":"")+".</b> Chaque message ci-dessous est le vrai message, tel qu'il arrive.";
+  $("au-sw").innerHTML=AUTO.map(function(a){return '<div class="aus'+(AON[a.k]?"":" off")+'" data-k="'+a.k+'"><div class="aus-h"><span class="aus-i k-'+a.k+'">'+ic(a.ico)+"</span>"+sw(a.k)+'</div><p class="aus-t">'+a.t+'</p><p class="aus-c">'+ic(a.ci)+a.c+" · "+a.when+'</p><p class="aus-w">'+ic("users")+a.who+"</p></div>";}).join("");
+  /* frise */
+  var W=weekEvents();
+  $("au-fr").innerHTML=W.map(function(x){var ev=x.ev.map(function(e){var a=AK(e.k);return '<div class="fe k-'+e.k+(AON[e.k]?"":" off")+'"><span class="fe-i">'+ic(a.ico)+'</span><div><p class="fe-h">'+e.h+'</p><p class="fe-t">'+esc(e.t)+'</p><p class="fe-s">'+esc(e.s)+"</p></div></div>";}).join("");
+    return '<div class="fd"><p class="fd-h"><b>'+lc1(JOURS[dd(x.d).getDay()])+"</b>"+dd(x.d).getDate()+"\u00a0"+MC[dd(x.d).getMonth()]+"</p>"+(ev||'<p class="fd-0">Rien de programmé</p>')+"</div>";}).join("");
+  $("au-fr-s").textContent="Semaine du "+dc(W[0].d)+" au "+dc(W[4].d);
+  $("au-cont").innerHTML=["alerte","recep"].map(function(k){var a=AK(k);return '<span class="k-'+k+(AON[k]?"":" off")+'">'+ic(a.ico)+a.t+"</span>";}).join("")+'<em>en continu, toute la semaine</em>';
+  /* 1. relance fournisseur */
+  var R=relances(),r=R.filter(function(x){return x.late;})[0]||R[0];
+  if(r){var o=r.o,ls=o.lines.map(function(c){var x=sref(c.ref);return "<li>"+esc(c.des)+" : <b>"+F(c.qte)+"\u00a0"+(x?(c.qte>1&&x.unite.slice(-1)!=="s"?x.unite+"s":x.unite):"")+"</b></li>";}).join("");
+    var socs=o.lines.map(function(c){return c.soc;}).filter(function(s,i,a){return a.indexOf(s)===i;});
+    $("au-m1").innerHTML=mailWin("Commande "+o.no+" : arrivée du "+dl(o.arr)+" dépassée",[
+      {h:dj(r.j1)+", 8 h 00",tag:"1er e-mail",body:"<p>Bonjour,</p><p>Notre commande <b>"+o.no+"</b> du "+dl(o.cde)+" devait arriver à Abidjan le <b>"+dl(o.arr)+"</b>. Elle n'est pas encore au dépôt.</p><ul>"+ls+"</ul><p>Pouvez-vous nous confirmer sous 48 heures :</p><ul class='n'><li>la nouvelle date d'arrivée ;</li><li>le numéro de suivi de l'envoi ;</li><li>les documents d'expédition attendus par notre transitaire.</li></ul><p>Merci,<br>Service achats, groupe SACRI</p>"},
+      {h:dj(r.j3)+", 8 h 00",tag:"Relance J+3",hot:true,body:"<p>Bonjour,</p><p>Sans nouvelles depuis notre message du "+dl(r.j1)+" sur la commande <b>"+o.no+"</b>, attendue le "+dl(o.arr)+".</p><p>Ces articles manquent en stock chez "+esc(socs.join(" et "))+". Merci de nous donner la date d'arrivée aujourd'hui.</p><p>Sans réponse, notre responsable des achats vous appellera.</p><p>Service achats, groupe SACRI</p>"}
+    ],"À : service commandes "+esc(o.four)+" · Cc : responsable des achats");
+    $("au-t1").innerHTML=trig(["Date promise : "+dc(o.arr),"Rien au dépôt","E-mail le "+dc(r.j1),"Relance le "+dc(r.j3)]);}
+  /* 2. point du lundi */
+  var all=SF;SF=null;var st=D.stock.slice(),G=groups(),m=nextMon(T),fin=addd(m,6);SF=all;
+  var ru=st.filter(function(x){return etat(x)==="Rupture";}),ss=st.filter(function(x){return etat(x)==="Sous le seuil";});
+  var arr=D.imp.filter(function(i){return i.alerte!=="Livré"&&i.depot<=fin;}).sort(function(a,b){return a.depot<b.depot?-1:1;});
+  $("au-m2").innerHTML='<div class="mail"><div class="mail-bar"><span class="dots"><i></i><i></i><i></i></span><span class="mb-t">'+ic("inbox")+'Boîte de réception</span></div>'+
+    '<div class="mail-h"><p class="subj">Point stocks du lundi '+dd(m).getDate()+"\u00a0"+MOIS[dd(m).getMonth()]+" : "+pl(ru.length,"rupture")+", "+pl(G.length,"achat")+' à valider</p>'+
+    '<div class="from"><span class="mav"><img src="assets/logo-sacri.png" alt=""></span><div class="fw"><p><b>Stocks SACRI</b><span class="auto">'+ic("zap")+'envoi automatique</span></p><p class="to">À : direction générale, responsables SACRI, DEFI, Trans-Roulements, SAFIR, PST-CI</p></div><span class="date">'+dj(m)+", 7 h 00</span></div></div>"+
+    '<div class="paper"><div class="pp-h"><img src="assets/logo-sacri.png" alt="SACRI"><div><p class="pp-t">Point stocks du lundi</p><p class="pp-s">Groupe SACRI · '+flong(m)+"</p></div></div>"+
+    '<div class="pp-k"><div class="r"><b>'+ru.length+"</b><span>Ruptures</span></div><div class=\"o\"><b>"+ss.length+"</b><span>Sous le seuil</span></div><div><b>"+G.length+"</b><span>Achats à valider</span></div></div>"+
+    '<p class="pp-sh">'+ic("package-x")+"Ruptures</p><ul class=\"pp-l\">"+ru.map(function(x){var c=openLines(x.ref).filter(function(c){return c.arr;})[0];return '<li><span><b>'+esc(x.des)+"</b><small>"+esc(x.soc)+"</small></span><em class=\""+(c?"g":"r")+"\">"+(c?"attendue le "+dc(c.arr):"aucune commande")+"</em></li>";}).join("")+"</ul>"+
+    '<p class="pp-sh">'+ic("ship")+"Arrivages de la semaine</p><ul class=\"pp-l\">"+arr.map(function(i){var late=i.depot<m;return '<li><span><b>'+esc(i.four.replace(" · ",", "))+"</b><small>"+esc(i.socs.join(", "))+" · "+(i.mode==="Aérien"?"avion":"bateau")+"</small></span><em class=\""+(late||/non confirmé|manquants/.test(i.alerte)?"r":"g")+"\">"+(late?"en retard, prévu le "+dc(i.depot):"dépôt le "+dc(i.depot))+"</em></li>";}).join("")+"</ul>"+
+    '<p class="pp-sh">'+ic("shopping-cart")+"Achats à valider</p><ul class=\"pp-l\">"+G.map(function(g){return '<li><span><b>'+esc(g.four)+"</b><small>"+esc(g.soc)+"</small></span><em>"+pl(g.lines.length,"article")+"</em></li>";}).join("")+"</ul>"+
+    '<p class="pp-b"><span>'+ic("external-link")+"Ouvrir le tableau des stocks</span></p></div></div>";
+  $("au-t2").innerHTML=trig(["Chaque lundi, 7 h","Chiffres du jour","DG et 5 responsables"]);
+  /* 3. alerte rupture */
+  var x=sref("PST-004")||ss[0],f=D.four[x.marque]||[0],p=D.prop[x.ref]||{q:0},rd=addd(T,x.couv),ad=addd(T,f[0]),u=function(n){return F(n)+"\u00a0"+(n>1&&x.unite.slice(-1)!=="s"?x.unite+"s":x.unite);};
+  var mag=(RALL.filter(function(r){return r.soc===x.soc;})[0]||{par:"le magasinier"}).par;
+  $("au-m3").innerHTML=phone("Magasin "+x.soc,"Magasinier, commercial, Stocks SACRI",
+    '<p class="wday">Aujourd\'hui</p><div class="bub in"><p class="who">Stocks SACRI</p>🔔 <b>Alerte stock · '+esc(x.soc)+"</b><br><b>"+esc(x.des)+"</b> ("+esc(x.marque)+") est passé sous son seuil.<br><br>📦 Stock : <b>"+u(x.stock)+"</b> · seuil : "+u(x.seuil)+"<br>📉 Sorties : "+u(x.conso)+" par mois<br>⏳ Rupture vers le <b>"+dc(rd)+"</b><br>🚚 Si on commande aujourd'hui : arrivée vers le "+dc(ad)+"<br><br>Achat proposé : <b>"+u(p.q)+'</b><span class="tm">8:05</span></div>'+
+    '<div class="wbt"><button data-goach="'+esc(x.marque+"|"+x.soc)+'">'+ic("shopping-cart")+"Lancer l'achat</button><button data-gost=\""+esc(x.ref)+'">'+ic("package")+"Voir l'article</button></div>"+
+    '<div class="bub in"><p class="who">Stocks SACRI</p>✅ '+esc(mag)+" a préparé la demande d'achat "+esc(x.marque)+". En attente de validation du responsable des achats."+'<span class="tm">8:12</span></div>',"8:12");
+  $("au-t3").innerHTML=trig(["Stock sous le seuil","Magasinier et commercial","Bouton « Lancer l'achat »"]);
+  /* 4. réception */
+  var rc=(D.rec||[]).filter(function(r){return !recInfo(r).ok;})[0]||(D.rec||[])[0];
+  $("au-m4").innerHTML=phone("Magasin "+rc.soc,rc.par+", Stocks SACRI",'<p class="wday">'+lc1(dj(rc.date))+'</p><div class="bub in"><p class="who">Stocks SACRI</p>'+waHtml(waMsg(rc))+'<span class="tm">'+hh(rc.h)+"</span></div>",hh(rc.h));
+  $("au-t4").innerHTML=trig(["Bon de réception saisi","Groupe du magasin","Manques et casse signalés"]);
+  /* état visuel des cartes */
+  [].forEach.call(document.querySelectorAll(".aushow"),function(c){var k=c.dataset.k,a=AK(k);c.classList.toggle("off",!AON[k]);c.querySelector(".ash-sw").innerHTML=sw(k);c.querySelector(".ash-v").innerHTML=ic("shield-check")+"1er envoi validé par "+a.val;});
+  [].forEach.call(document.querySelectorAll("#v-automatique [data-sw]"),function(b){b.onclick=function(){var k=b.dataset.sw;AON[k]=!AON[k];saveAon();renderAuto();badges();toast(AK(k).t+(AON[k]?" : activé":" : désactivé, rien ne part"));};});
+  [].forEach.call(document.querySelectorAll("[data-goach]"),function(b){b.onclick=function(){show("achats");openPrep(b.dataset.goach);};});
+  [].forEach.call(document.querySelectorAll("[data-gost]"),function(b){b.onclick=function(){var s=sref(b.dataset.gost);Q=s.des;$("q").value=Q;FF=null;show("stock");};});
+}
+function trig(a){return a.map(function(t,i){return '<span>'+(i?ic("arrow-right"):"")+esc(t)+"</span>";}).join("");}
+function mailWin(subj,msgs,to){return '<div class="mail"><div class="mail-bar"><span class="dots"><i></i><i></i><i></i></span><span class="mb-t">'+ic("mail")+"Messagerie du fournisseur</span></div>"+
+  '<div class="mail-h"><p class="subj">'+esc(subj)+"</p></div>"+msgs.map(function(m){return '<div class="mm'+(m.hot?" hot":"")+'"><div class="from"><span class="mav"><img src="assets/logo-sacri.png" alt=""></span><div class="fw"><p><b>Achats SACRI</b><span class="tag'+(m.hot?" hot":"")+'">'+m.tag+'</span></p><p class="to">'+to+'</p></div><span class="date">'+m.h+'</span></div><div class="mail-b">'+m.body+"</div></div>";}).join("")+"</div>";}
+function phone(name,sub,body,clock){return '<div class="phone"><div class="ph-in"><div class="ph-sb"><span>'+clock+'</span><span class="ph-isl"></span><span class="ph-ic"><i></i><i></i><i></i></span></div>'+
+  '<div class="wa-h">'+ic("chevron-left")+'<span class="wav"><img src="assets/logo-sacri.png" alt=""></span><div class="wa-n"><p>'+esc(name)+"</p><small>"+esc(sub)+'</small></div>'+ic("video")+ic("phone")+"</div>"+
+  '<div class="wa-c">'+body+'</div><div class="wa-in"><span>'+ic("smile")+'Message</span>'+ic("paperclip")+ic("camera")+'<b>'+ic("mic")+"</b></div></div></div>";}
+
+function render(v){renderFbar();if(v==="ensemble"){renderLede();renderKpis();renderEnsCharts();renderHeat();renderTodo();renderAcMini();renderImMini();}else if(v==="stock")renderStock();else if(v==="achats")renderAchats();else if(v==="commandes")renderCommandes();else if(v==="receptions")renderReceptions();else if(v==="suivi")renderSuivi();else if(v==="automatique")renderAuto();else renderImports();}
 function show(v){
   CUR=v;[].forEach.call(document.querySelectorAll(".ni[data-v],.tabbar button"),function(b){b.classList.toggle("on",b.dataset.v===v);});
   [].forEach.call(document.querySelectorAll(".view"),function(s){s.classList.toggle("on",s.id==="v-"+v);});
@@ -697,5 +798,5 @@ function init(d){
   window.addEventListener("hashchange",function(){var x=(location.hash||"").slice(1);if(VNAME[x]&&x!==CUR)show(x);});
   window.__stocks={per:function(x){PER=x;renderAll();},pick:pick,show:show,openPrep:openPrep,closePrep:closePrep,groups:groups,waMsg:waMsg,rapp:rapp};
 }
-fetch("data/donnees.json?v=2027b").then(function(r){return r.json();}).then(init);
+fetch("data/donnees.json?v=2027e").then(function(r){return r.json();}).then(init);
 })();
