@@ -145,6 +145,8 @@ h2 svg.i{color:var(--mut2)}
 .kc .v small{font:500 13px/1 var(--sans);color:var(--mut);margin-left:5px;letter-spacing:0}
 .kc.key .v{color:var(--red)}
 .kc svg.spk{width:84px;height:34px;overflow:visible;flex:none}
+.kc .vr{flex-wrap:wrap;row-gap:8px}
+@media (min-width:1101px) and (max-width:1500px){.k5 .kc .v{font-size:32px}.k5 .kc svg.spk{width:64px}}
 .kc .s{font:400 12.5px/1.45 var(--sans);color:var(--mut);margin-top:12px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
 .dl{display:inline-flex;align-items:center;gap:3px;font:600 12px/1 var(--sans);padding:3px 7px;border-radius:999px;white-space:nowrap}
 .dl.up{background:var(--grnb);color:var(--grnt)}
