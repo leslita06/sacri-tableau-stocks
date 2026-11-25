@@ -553,7 +553,7 @@ function renderAchatsCharts(){
   var fs=[];g.forEach(function(x){if(fs.indexOf(x.four)<0)fs.push(x.four);});
   var socs=[];g.forEach(function(x){if(socs.indexOf(x.soc)<0)socs.push(x.soc);});
   mk("c-ac-f",{type:"bar",data:{labels:fs,datasets:socs.map(function(s){return {label:s,data:fs.map(function(f){return Math.round(sum(g.filter(function(x){return x.four===f&&x.soc===s;}).map(function(x){return x.mt;}))/1e4)/100;}),backgroundColor:SOCC[s],stack:"a",barPercentage:.6};})},
-    options:{interaction:{mode:"index",intersect:false},scales:{x:axisX({stacked:true,ticks:{autoSkip:false,maxRotation:0,font:{size:11}}}),y:axisY({stacked:true,ticks:{maxTicksLimit:5,callback:function(v){return fr(v)+" M";}}})},plugins:{tooltip:{filter:function(i){return i.parsed.y>0;},callbacks:{label:function(c){return " "+c.dataset.label+" : "+fr(c.parsed.y,2)+" M FCFA";}}}}}});
+    options:{indexAxis:"y",interaction:{mode:"index",intersect:false},scales:{x:axisY({stacked:true,ticks:{maxTicksLimit:5,callback:function(v){return fr(v)+" M";}}}),y:{stacked:true,grid:{display:false},ticks:{color:"#334155",autoSkip:false,font:{size:11.5},callback:function(v){var t=this.getLabelForValue(v);return t.length>16?t.slice(0,15)+"\u2026":t;}}}},plugins:{tooltip:{filter:function(i){return i.parsed.x>0;},callbacks:{label:function(c){return " "+c.dataset.label+" : "+fr(c.parsed.x,2)+" M FCFA";}}}}}});
   $("ac-f-leg").innerHTML=socs.map(function(s){return '<span><i style="background:'+SOCC[s]+'"></i>'+esc(s)+"</span>";}).join("");
   var B=buckets(),refs=[];g.forEach(function(x){x.lines.forEach(function(l){refs.push(l.x);});});
   var top=refs.slice().sort(function(a,b){return b.conso*b.cu-a.conso*a.cu;}).slice(0,4);
@@ -798,5 +798,5 @@ function init(d){
   window.addEventListener("hashchange",function(){var x=(location.hash||"").slice(1);if(VNAME[x]&&x!==CUR)show(x);});
   window.__stocks={per:function(x){PER=x;renderAll();},pick:pick,show:show,openPrep:openPrep,closePrep:closePrep,groups:groups,waMsg:waMsg,rapp:rapp};
 }
-fetch("data/donnees.json?v=2027e").then(function(r){return r.json();}).then(init);
+fetch("data/donnees.json?v=2027f").then(function(r){return r.json();}).then(init);
 })();
